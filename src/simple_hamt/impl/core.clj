@@ -66,9 +66,39 @@
   "Update the bitmap to include a 1 in the 0-based index position
 
   NOTE: 0 -> 1, 1 -> 2, 2 -> 4, 3 -> 8, etc."
-  [bitmap index]
-  (throwables/invalid-position index)
-  (bit-or bitmap (int (Math/pow 2 index))))
+  [bitmap child-index]
+  (throwables/invalid-position child-index)
+  (bit-or bitmap (int (Math/pow 2 child-index))))
+
+(defn- update-hash-table
+  "Will update an existing hash-table
+
+  NOTE: This is an important function to aid the hash-table's sparse array implementation"
+  [hash-table bitmap child-index k v]
+  (let [in-bitmap-seq
+        (map (fn [idx]
+               (let [node (cond
+                            (= idx child-index)
+                            {:type :node
+                             :key k
+                             :value v}
+                                          
+                            (in-bitmap? bitmap idx)
+                            (clojure.core/nth hash-table (get-hash-table-index bitmap idx))
+
+                            :else
+                            nil)]
+                 [idx node]))
+             (range 0 number-of-children))
+        
+        new-hash-table
+        (reduce (fn [acc [index node]]
+                  (if (not (nil? node))
+                    (conj acc node)
+                    acc))
+                []
+                in-bitmap-seq)]
+    new-hash-table))
 
 (defn get*
   "Retrieve a value from the HAMT.
@@ -100,16 +130,12 @@
                  :seg-index (inc seg-index)}))))))
 
 (defn- insert
-  "Insert a child inot hash-table of the current node
+  "Insert a child into hash-table of the current node
 
   Manages the bitmap as well, but does not handle collisions!"
-  [{:keys [bitmap hash-table] :as hm} index k v]
-  (let [new-bitmap (update-bitmap bitmap index)
-        new-hash-table (->> (conj hash-table {:type :node
-                                              :key k
-                                              :value v})
-                            (sort-by :key)
-                            (into []))
+  [{:keys [bitmap hash-table] :as hm} child-index k v]
+  (let [new-bitmap (update-bitmap bitmap child-index)
+        new-hash-table (update-hash-table hash-table bitmap child-index k v)
         new-hm (assoc hm
                       :bitmap new-bitmap
                       :hash-table new-hash-table)]
@@ -124,32 +150,34 @@
         new-segs (drop seg-index (segment-seq (hash* (:key new-node))))
         segs (map vector old-segs new-segs (range))
         sh (reduce (fn [acc [o n i]]
-                     (if (= o n)
-                       ;; Collision, will need to create a :sub-hash node, but defer the actual work
-                       (if (:finished acc)
-                         acc
-                         (update acc :colliding-segs #(conj % o)))
-                       (let [subhash {:type :sub-hash
-                                      :bitmap 0
-                                      :hash-table []}
-                             
-                             subhash-with-old
-                             (insert subhash o (:key old-node) (:value old-node))
-                             
-                             subhash-with-old-and-new
-                             (insert subhash-with-old n (:key new-node) (:value new-node))
-                             
-                             new-subhash-node
-                             (loop [rem (:colliding-segs acc)
-                                    sh subhash-with-old-and-new]
-                               (if (nil? (first rem))
-                                 sh
-                                 (recur (rest rem) {:type :sub-hash
-                                                    :bitmap (update-bitmap 0 (first rem))
-                                                    :hash-table [sh]})))]
-                         (assoc acc
-                                :finished true
-                                :subhash-node new-subhash-node))))
+                     (if (:finished acc)
+                       ;; If already finished, return to drop out of reduce
+                       acc
+                       
+                       (if (= o n)
+                         ;; Collision, will need to create a :sub-hash node, but defer the actual work
+                         (update acc :colliding-segs #(conj % o))
+                         (let [subhash {:type :sub-hash
+                                        :bitmap 0
+                                        :hash-table []}
+                               
+                               subhash-with-old
+                               (insert subhash o (:key old-node) (:value old-node))
+                               
+                               subhash-with-old-and-new
+                               (insert subhash-with-old n (:key new-node) (:value new-node))
+                               
+                               new-subhash-node
+                               (loop [rem (:colliding-segs acc)
+                                      sh subhash-with-old-and-new]
+                                 (if (nil? (first rem))
+                                   sh
+                                   (recur (rest rem) {:type :sub-hash
+                                                      :bitmap (update-bitmap 0 (first rem))
+                                                      :hash-table [sh]})))]
+                           (assoc acc
+                                  :finished true
+                                  :subhash-node new-subhash-node)))))
                    {:colliding-segs '()
                     :finished false
                     :subhash-node nil}
@@ -162,14 +190,14 @@
   (throwables/invalid-node-type hm)
 
   (let [{:keys [bitmap hash-table]} hm
-        index (get-hash-segment hash-val seg-index)
-        collision-detected? (in-bitmap? bitmap index)]
+        child-index (get-hash-segment hash-val seg-index)
+        collision-detected? (in-bitmap? bitmap child-index)]
     (if (not collision-detected?)
-      (insert hm index k v)
-      (let [hash-table-index (get-hash-table-index bitmap index)
+      (insert hm child-index k v)
+      (let [hash-table-index (get-hash-table-index bitmap child-index)
             {:keys [type key value]
              :as collision-node} (clojure.core/nth hash-table
-                                         hash-table-index)]
+                                                   hash-table-index)]
         (cond
           (= type :node)
           (if (= k key)
