@@ -2,6 +2,10 @@
 
 A Hash Array Mapped Trie toy implementation in Clojure
 
+## Reading
+
+[simple-hamt design](/doc/intro.md)
+
 ## Usage
 
 ```
