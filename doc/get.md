@@ -121,3 +121,7 @@ as it's segment.
 (get-hash-segment hash-value 2) ;; => 2, 2r10
 (get-hash-segment hash-value 3) ;; => 3, 2r11
 ```
+
+<a name="footnote-1">1</a>: Here we are ignoring the concerns that are usually associated with why we need a hash function in the first place, and seek to just assume that such a function exists and we can just use it.
+
+<a name="footnote-2">2</a>: I created the name segment for my own purposes, given that the HAMT paper used index and I didn't want to confuse that with the fact that I use index exclusively to talk about indexing into the `:hash-table` of nodes.
