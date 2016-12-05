@@ -123,7 +123,7 @@ We can convert these keys to their hash values, and then get the segments that r
 These results are summarized in the following table.
 
 | key | hash value (decimal) | hash value (binary) |  segments (binary) | segments (decimal) |
-|---|---|---|---|
+|---|---|---|---|---|
 |  1 |  1 | [00 00 00 01] | [01 00 00 00] | [1 0 0 0] |
 |  2 |  2 | [00 00 00 10] | [10 00 00 00] | [2 0 0 0] |
 |  3 |  3 | [00 00 00 11] | [11 00 00 00] | [3 0 0 0] |
