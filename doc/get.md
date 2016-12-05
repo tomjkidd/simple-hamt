@@ -77,7 +77,7 @@ The following data structure serves as an example that will allow us to understa
 
 Here is a node visualization of the data structure
 
-![Sample data structure visualization](./images/sample-data-structure.svg)
+![Sample data structure visualization](https://cdn.rawgit.com/tomjkidd/simple-hamt/master/doc/images/sample-data-structure.svg)
 
 The root node is the leftmost node in the image.
 As you move right, the relationship of nodes to their children is indicated by the black lines connecting nodes.
@@ -133,7 +133,7 @@ These results are summarized in the following table.
 
 This table and the visualization can help us understand how to find values given keys.
 
-![Sample data structure visualization with access to node B](./images/sample-data-structure-access1.svg)
+![Sample data structure visualization with access to node B](https://cdn.rawgit.com/tomjkidd/simple-hamt/master/doc/images/sample-data-structure-access1.svg)
 *Access to data structure node with key and value 1*
 
 To access `1`, we look at the first segment, which is the value 1.
@@ -143,7 +143,7 @@ Because index 0 is 0, this means that the first element in `:hash-table` is wher
 This node has `:node` type, so we check the `:key`, which is equal to the key we are looking for, so `:value` is returned as `1`.
 
 
-![Sample data structure visualization with access to node E](./images/sample-data-structure-access2.svg)
+![Sample data structure visualization with access to node E](https://cdn.rawgit.com/tomjkidd/simple-hamt/master/doc/images/sample-data-structure-access2.svg)
 *Access to data structure node with key and value 2*
 
 To access `2`, we look at the first segment, which is the value 2.
@@ -156,7 +156,7 @@ Segment 0 corresponds to the first element in `:hash-table`.
 This node has `:node` type, and it's `:key` matches the key we are searching for, so `:value` is used to return `2`.
 
 
-![Sample data structure visualization with access to node D](./images/sample-data-structure-access3.svg)
+![Sample data structure visualization with access to node D](https://cdn.rawgit.com/tomjkidd/simple-hamt/master/doc/images/sample-data-structure-access3.svg)
 *Access to data structure node with key and value 3*
 
 To access `3`, we look at the first segment, which is the value 3.
@@ -166,7 +166,7 @@ Index 0 is 0, index 1 is 1, and index 2 is 1, which means that two children come
 This node has `:node` type, and it's `:key` matches the key we are searching for, so `:value` is used to return `3`.
 
 
-![Sample data structure visualization with access to node G](./images/sample-data-structure-access6.svg)
+![Sample data structure visualization with access to node G](https://cdn.rawgit.com/tomjkidd/simple-hamt/master/doc/images/sample-data-structure-access6.svg)
 *Access to data structure node with key and value 6*
 
 To access `6`, we look at the first segment, which is the value 2.
@@ -174,11 +174,11 @@ Starting at the `:root` node, we look at the `:bitmap` to see if there is a chil
 `14` corresponds to `2r1110`, which means that...
 TODO: Finish description
 
-![Sample data structure visualization with access to node I](./images/sample-data-structure-access22.svg)
+![Sample data structure visualization with access to node I](https://cdn.rawgit.com/tomjkidd/simple-hamt/master/doc/images/sample-data-structure-access22.svg)
 *Access to data structure node with key and value 22*
 TODO: Finish description
 
-![Sample data structure visualization with access to node J](./images/sample-data-structure-access86.svg)
+![Sample data structure visualization with access to node J](https://cdn.rawgit.com/tomjkidd/simple-hamt/master/doc/images/sample-data-structure-access86.svg)
 *Access to data structure node with key and value 86*
 TODO: Finish description
 
