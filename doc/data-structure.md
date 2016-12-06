@@ -1,5 +1,9 @@
 # Data Structure
 
+The HAMT itself is a tree data structure used to provide a hash map interface.
+The tree structure is what gives it good performance characteristics.
+The tree is made up of nodes, and that is the purpose of this section, to describe how the tree is structured.
+
 Before we talk about the nodes that make up the data structure, it will help to first talk about bitmaps and hash tables, which are the actual data components that organize each node.
 
 ## Bitmap
@@ -99,7 +103,7 @@ First, create a table that incorporates this information.
 | b2 | 2 | 1 | True |
 | b3 | 3 | 1 | True |
 
-Now the bit value column can be used to construce the binary value `1011`, which corresponds to the bitmap value of `13`.
+Now the bit value column can be used to construce the binary value `1101`, which corresponds to the bitmap value of `13`.
 
 ## Hash Table
 
@@ -110,41 +114,91 @@ The bitmap serves as a conceptual array, where for each of the four child index 
 For `1` values in the bitmap, that means a child is present in the hash table.
 For `0` values in the bitmap, children are not present in the hash table.
 
-If some sort of sentinel value, like nil, were used, all that would be needed to implement the hash table is to initialize an array with 4 elements, where each position is nil initially to indicate no children.
+If some sort of sentinel value, like `nil`, were used, all that would be needed to implement the hash table is to initialize an array with 4 elements, where each position is nil initially to indicate no children.
 To update this hash table, you would just access it by index directly to add or remove a child.
-The problem with this solution is that as you grow the number of children (here 4, in Clojure's native implementation 32), you would waste a lot of space for children that aren't, and may never be realized.
+The problem with this solution is that as you grow the number of children (here 4, in Clojure's native implementation 32), you would waste a lot of space for children that may never be realized.
 
-The trick mentioned in the HAMT paper is that we will still use an array, but we will use a bit operation in a clever way to figure out a way to store only the children that are present.
-This works conceptually by an algorithm where you count the bits that preceed (to the right) a given index in the bitmap to account for how many other children are in the array and then add 1 to that to account for the desired position, and that will give you the index to use into the hash table array.
-This will ensure that there is no wasted space, and as long as this bit operation is fast, you don't waste time.
+The trick mentioned in the HAMT paper is that we will still use an array, but we will use the bitmap and a bit operation in a clever way to figure out a way to store only the children that are present.
+This works conceptually by an algorithm where you count the bits that preceed (to the right) a given index in the bitmap to account for how many other children are in the array, and that will give you the index to use into the hash table array.
+This will ensure that there is no wasted space for empty nodes, and only requires 4 extra bits (theoretically) per node in order to accomodate this trick.
+As long as this bit operation is fast, you don't waste time either.
 
 ### Examples
 
-Lets look at 15, a made up `bitmap` value, to start.
+1 . Bitmap value of `0`
 
-15 can be converted to binary
+First, we convert to binary, `0000`, and then we can get the following information
 
-`1111`
+| Bitmap Position | Index | Bit Value | Child exists |
+|---|---|---|---|
+| b0 | 0 | 0 | False |
+| b1 | 1 | 0 | False |
+| b2 | 2 | 0 | False |
+| b3 | 3 | 0 | False |
 
-Each bit represents the presence of a child, so to get the number of children that
-are contained in `hash table`, convert `bitmap` to binary, and count the number
-of `1`s that are there (4 in this case). This means that `b0` corresponds to index 0, `b1` to 1, `b2` to 2, and `b3` to 3.
+We can determine there are no children that exist.
+The hash table will have 0 elements in it.
 
-To try another, consider the `bitmap` 5
+2 . Bimap value of `6`
 
-5 can be converted to binary
+First, convert to binary, `0110`, and then we can get the following information
 
-`0101`
+| Bitmap Position | Index | Bit Value | Child exists |
+|---|---|---|---|
+| b0 | 0 | 0 | False |
+| b1 | 1 | 1 | True |
+| b2 | 2 | 1 | True |
+| b3 | 3 | 0 | False |
 
-This means there are two children in `hash table`, one to represent `b0` at index 0 and one to represent `b2` at index 1.
+We can determine that 2 children exist.
+The hash table will have 2 elements in it.
+`b1` has one position before it, `b0`, but this position does not have a child.
+This means that `b1` is the first element in the `hash table`, at index 0.
+`b2` has two positions before it, `b0` and `b1`.
+There is one child before `b2`, so `b2` is the second element in the `hash table`, at index 1.
 
 ### Exercises
 
-TODO: Add here
+1 . Use a bitmap with a value of `8`. Determine which bit positions have children, and what the index into the `hash table` is for those children
+
+2 . Use a bitmap with a value of `12`. Determine which bit positions have children, and what the index into the `hash table` is for those children
 
 ### Answers
 
-TODO: Add here
+1 . Use a bitmap with a value of `8`. Determine which bit positions have children, and what the index into the `hash table` is for those children
+
+First, convert to binary, `0100`, and then we can get the following information
+
+| Bitmap Position | Index | Bit Value | Child exists |
+|---|---|---|---|
+| b0 | 0 | 0 | False |
+| b1 | 1 | 0 | False |
+| b2 | 2 | 1 | True |
+| b3 | 3 | 0 | False |
+
+We can determine that 1 child exists.
+The hash table will have 1 element in it.
+`b2` has two positions before it, `b0` and `b1`.
+There are no children before `b2`, so `b2` is the first element in the `hash table`, at index 0.
+
+2 . Use a bitmap with a value of `12`. Determine which bit positions have children, and what the index into the `hash table` is for those children
+
+First, convert to binary, `1100`, and then we can get the following information
+
+| Bitmap Position | Index | Bit Value | Child exists |
+|---|---|---|---|
+| b0 | 0 | 0 | False |
+| b1 | 1 | 0 | False |
+| b2 | 2 | 1 | True |
+| b3 | 3 | 1 | True |
+
+We can determine that 2 children exist.
+The hash table will have 2 elements in it.
+`b2` has two positions before it, `b0` and `b1`.
+There are no children before `b2`, so `b2` is the first element in the `hash table`, at index 0.
+`b3` has three positions before it, `b0`, `b1`, and `b2`.
+There is a single child before `b3`, so `b3` is the second element in the `hash table`, at index 1.
+
 
 ## Node Types
 
@@ -187,4 +241,4 @@ First we'll take a look at an existing data structure and work through how to ac
 This ignores how the data structure was created, with a focus on how to navigate through the tree.
 After that, we'll discuss how to create the data structure.
 
-[Get](./get.md)
+[The Get Operation](./get.md)
