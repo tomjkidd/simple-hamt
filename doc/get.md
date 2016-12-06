@@ -81,7 +81,7 @@ Here is a node visualization of the data structure
 
 The root node is the leftmost node in the image.
 As you move right, the relationship of nodes to their children is indicated by the black lines connecting nodes.
-Fo each node, the children are ordered top-to-bottom, in index order 0, 1, 2, and 3.
+For each node, the children are ordered top-to-bottom, in index order 0, 1, 2, and 3.
 The `:root` and `:sub-hash` nodes are orange, and the `:node` nodes are purple.
 There are black X's to show where missing nodes are, this is what makes `:hash-map` a sparse array.
 Note the four levels of the tree, below the root node.
