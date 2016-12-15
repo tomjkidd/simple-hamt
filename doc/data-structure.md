@@ -17,7 +17,8 @@ This means that the only valid bitmaps for the 4-child HAMT are 0-15.
 Note that for this implementation, no care was taken to make this a word, only the first four bits of a bitmap contain relevant information.
 The index values into the bit map read from right-to-left (LSB) order, with index 0 as the rightmost bit and index 3 as the leftmost bit for a 4 child node.
 
-<img src="./images/bitmap-index.svg" width="500" height="250"/>
+![Bitmap with index values B0 B1 B2 B3](./images/bitmap-index.png)
+*Bitmap, showing index values*
 
 | Bitmap position | Index |
 |---|---|
